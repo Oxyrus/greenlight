@@ -38,7 +38,7 @@ func main() {
 	// Read the value of the port and env command-line flags into the config struct.
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
-	flag.StringVar(&cfg.db.dsn, "db", "postgres://greenlight:greenlight@localhost/greenlight?sslmode=disable", "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db", os.Getenv("GREENLIGHT_DB"), "PostgreSQL DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
@@ -56,7 +56,12 @@ func main() {
 
 	// Defer a call to db.Close() so that the connection pool is closed before the
 	// main() function exits.
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}(db)
 
 	// Also log a message to say that the connection pool has been successfully established.
 	logger.Printf("database connection pool established")
