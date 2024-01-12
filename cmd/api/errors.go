@@ -7,7 +7,7 @@ import (
 
 // The logError() method is a generic helper for logging an error message.
 func (app *application) logError(r *http.Request, err error) {
-	app.logger.Println(err)
+	app.logger.Error(err.Error())
 }
 
 // The errorResponse() method is a generic helper for sending JSON-formatted error
