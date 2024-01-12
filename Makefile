@@ -8,3 +8,6 @@ run: build
 
 build:
 	$(GOBUILD) -o $(BINARY_NAME) ./cmd/api
+
+create-migration:
+	migrate create -ext sql -dir migrations/ -seq $(NAME)
