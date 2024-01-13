@@ -11,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/oxyrus/greenlight/internal/data"
 )
 
 // Declare a string containing the application version number. Later we'll
@@ -40,6 +41,7 @@ type config struct {
 type application struct {
 	config config
 	logger *slog.Logger
+	models data.Models
 }
 
 func main() {
@@ -89,6 +91,7 @@ func main() {
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModel(db),
 	}
 
 	// Declare an HTTP server with some sensible timeout settings, which listens on the
