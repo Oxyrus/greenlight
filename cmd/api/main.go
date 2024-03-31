@@ -6,10 +6,12 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/oxyrus/greenlight/internal/data"
+	"github.com/oxyrus/greenlight/internal/mailer"
 )
 
 // Declare a string containing the application version number. Later we'll
@@ -36,6 +38,13 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 // Define an application struct to hold the dependencies for our HTTP handlers, helpers
@@ -45,6 +54,8 @@ type application struct {
 	config config
 	logger *slog.Logger
 	models data.Models
+	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
@@ -75,6 +86,12 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "0387bc77b47a74", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "d1b0c0045d099d", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.oxyrus.com>", "SMTP sender")
+
 	flag.Parse()
 
 	// Initialize a new logger which writes messages to the standard out stream,
@@ -99,6 +116,7 @@ func main() {
 		config: cfg,
 		logger: logger,
 		models: data.NewModel(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	// Start the HTTP server.
