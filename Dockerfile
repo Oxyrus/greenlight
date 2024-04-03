@@ -38,4 +38,5 @@ COPY --from=builder /app/greenlight .
 EXPOSE 4000
 
 # Define the entrypoint script or command
-CMD ./migrate -path ./migrations -database "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:5432/${DB_NAME}?sslmode=disable" -verbose up && ./greenlight
+CMD ./migrate -path ./migrations -database "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:5432/${DB_NAME}?sslmode=disable" -verbose up \
+    && ./greenlight -cors-trusted-origins="http://localhost:9000 http://localhost:9001"
