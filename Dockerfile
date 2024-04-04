@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o greenlight ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags='-s' -o greenlight ./cmd/api
 
 # Use alpine:latest for the final stage
 FROM alpine:latest
